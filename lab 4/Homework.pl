@@ -1,3 +1,5 @@
+%Code from the previous exercise can also be used
+
 %Name, surname, age, height (sm), weight (kg)
 person(timur, gatin, 60, 175, 80).
 person(aidar, gatin, 35, 180, 85).
