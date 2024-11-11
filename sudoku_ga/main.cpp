@@ -5,14 +5,39 @@
 #include <set>
 #include <algorithm>
 #include <fstream>
+#include <type_traits>
 
 using namespace std;
 
 const int N = 9;
 const int MINUS_INFINITY = numeric_limits<int>::min();
 
+enum Mutation {
+    ROW, COLUMN, SQUARE
+};
 
-int getRandomNumber(int n) {
+template <typename T>
+T getRandom(T start, T end) {
+    mt19937 generator(random_device{}());
+
+    if constexpr (std::is_floating_point<T>::value) {
+        uniform_real_distribution<T> distribution(start, end);
+        return distribution(generator);
+    }
+    else if constexpr (std::is_integral<T>::value) {
+        uniform_int_distribution<T> distribution(start, end);
+        return distribution(generator);
+    }
+}
+
+Mutation getRandomMutation() {
+    random_device rd;
+    mt19937 generator(rd());
+    uniform_int_distribution<int> distribution(0, 2);
+    return static_cast<Mutation>(distribution(generator));
+}
+
+int getRandomDigit(int n) {
     random_device rd;
     mt19937 gen(rd());
     uniform_int_distribution<> distrib(1, n);
@@ -23,7 +48,6 @@ class Table {
 private:
     vector<vector<int>> grid;
     int fitness = 0;
-    set<pair<int, int>> filled;
 
 public:
     Table() : grid(N, vector<int>(N, 0)) {}
@@ -37,8 +61,8 @@ public:
         return fitness < other.fitness;
     }
 
-    void addFilled(int i, int j) {
-        this->filled.insert(make_pair(i, j));
+    vector<vector<int>> getGrid() {
+        return this->grid;
     }
 
     vector<int> getPossible(int row, int col) {
@@ -88,14 +112,13 @@ public:
     }
 
     Table get_random_solution() {
-        vector<vector<int>> solution(N, vector<int>(N, 0));
+        vector<vector<int>> solution = this->grid;
         for (int i = 0; i < N; ++i) {
             for (int j = 0; j < N; ++j) {
-                if (grid[i][j] != 0) solution[i][j] = this->grid[i][j];
-                else {
+                if (grid[i][j] == 0) {
                     vector<int> possible_digits = this->getPossible(i, j);
-                    if (!possible_digits.empty()) solution[i][j] = possible_digits[getRandomNumber(int(possible_digits.size()))];
-                    else solution[i][j] = getRandomNumber(N);
+                    if (!possible_digits.empty()) solution[i][j] = possible_digits[getRandomDigit(int(possible_digits.size()))];
+                    else solution[i][j] = getRandomDigit(N);
                 }
             }
         }
@@ -119,71 +142,14 @@ public:
                 in >> c;
                 if (c != '-') {
                     t.grid[i][j] = c - '0';
-                    t.addFilled(i, j);
                 } else t.grid[i][j] = 0;
             }
         }
         return in;
     }
 
-    bool isEmpty(int i, int j) {
-        return grid[i][j] == -1;
-    }
-
-    [[nodiscard]] int getFitness() const {
-        return this->fitness;
-    }
-
-    int getCell(int i, int j) {
-        return this->grid[i][j];
-    }
-
     void setCell(int i, int j, int digit) {
         this->grid[i][j] = digit;
-    }
-
-    vector<set<int>> rowDigits() {
-        vector<set<int>> res(9);
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
-                res[i].insert(this->grid[i][j]);
-            }
-        }
-        return res;
-    }
-
-    vector<set<int>> columnDigits() {
-        vector<set<int>> res(9);
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
-                res[j].insert(this->grid[i][j]);
-            }
-        }
-        return res;
-    }
-
-    vector<set<int>> squareDigits() {
-        vector<set<int>> res(9);
-
-        for (int i = 0; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
-                int squareIndex = (i / 3) * 3 + (j / 3);
-                res[squareIndex].insert(grid[i][j]);
-            }
-        }
-        return res;
-    }
-
-    int setFitness() {
-        int res = 0;
-        vector<set<int>> rowDigits = this->rowDigits();
-        vector<set<int>> columnDigits = this->columnDigits();
-        vector<set<int>> squareDigits = this->squareDigits();
-        for (int i = 0; i < N; ++i) {
-            res += int(rowDigits[i].size()) + int(columnDigits[i].size()) + int(squareDigits[i].size());
-        }
-        this->fitness = res;
-        return res;
     }
 };
 
@@ -207,12 +173,48 @@ private:
 public:
     explicit GeneticAlgorithm(Table t) : table(std::move(t)) {}
 
-    vector<Table> get_initial_solution() {
+    vector<Table> get_population() {
         vector<Table> population;
         for (int i = 0; i < this->population_size; ++i) {
             population.push_back(this->table.get_random_solution());
         }
         return population;
+    }
+
+    Table mutate() {
+        vector<vector<int>> mutated_solution = this->table.getGrid();
+        for (int i = 0; i < N; ++i) {
+            if (getRandom(0.0, 1.0) < this->mutation_rate) {
+                Mutation mutation_type = getRandomMutation();
+                switch (mutation_type) {
+                    case ROW:
+                        swap(mutated_solution[i][getRandomDigit(N)], mutated_solution[i][getRandomDigit(N)]);
+                        break;
+                    case COLUMN:
+                        swap(mutated_solution[getRandomDigit(N)][i], mutated_solution[getRandomDigit(N)][i]);
+                        break;
+                    case SQUARE:
+                        int square_row = (i / 3) * 3;
+                        int square_col = (i % 3) * 3;
+                        vector<pair<int, int>> square_cells;
+                        for (int j = square_row; j < square_row + 3; ++j) {
+                            for (int k = square_col; k < square_col + 3; ++k) {
+                                square_cells.emplace_back(j, k);
+                            }
+                        }
+                        int size_square_cells = int(square_cells.size());
+                        auto first_random_cell = square_cells[getRandom(0, size_square_cells)];
+                        auto second_random_cell = square_cells[getRandom(0, size_square_cells)];
+                        int i1 = first_random_cell.first;
+                        int j1 = first_random_cell.second;
+                        int i2 = second_random_cell.first;
+                        int j2 = second_random_cell.second;
+                        swap(mutated_solution[i1][j1], mutated_solution[i2][j2]);
+                        break;
+                }
+            }
+        }
+        return Table(mutated_solution);
     }
 };
 
