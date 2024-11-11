@@ -128,30 +128,6 @@ sudoku_ga/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\sudoku_ga.dir\build.make CMakeFiles/sudoku_ga.dir/build
 .PHONY : sudoku_ga/fast
 
-C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.obj: C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.obj
-.PHONY : C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.obj
-
-# target to build an object file
-C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\sudoku_ga.dir\build.make CMakeFiles/sudoku_ga.dir/C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.obj
-.PHONY : C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.obj
-
-C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.i: C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.i
-.PHONY : C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.i
-
-# target to preprocess a source file
-C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\sudoku_ga.dir\build.make CMakeFiles/sudoku_ga.dir/C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.i
-.PHONY : C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.i
-
-C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.s: C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.s
-.PHONY : C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.s
-
-# target to generate assembly for a file
-C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\sudoku_ga.dir\build.make CMakeFiles/sudoku_ga.dir/C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.s
-.PHONY : C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.cpp.s
-
 main.obj: main.cpp.obj
 .PHONY : main.obj
 
@@ -185,9 +161,6 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... sudoku_ga
-	@echo ... C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.obj
-	@echo ... C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.i
-	@echo ... C_/didi/Inno/2_year_1_semester/introToAI/sudoku_previous.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s

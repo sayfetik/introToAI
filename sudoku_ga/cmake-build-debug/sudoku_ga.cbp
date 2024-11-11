@@ -87,9 +87,6 @@
 		<Unit filename="C:/didi/Inno/2 year 1 semester/introToAI/sudoku_ga/main.cpp">
 			<Option target="sudoku_ga"/>
 		</Unit>
-		<Unit filename="C:/didi/Inno/2 year 1 semester/introToAI/sudoku_previous.cpp">
-			<Option target="sudoku_ga"/>
-		</Unit>
 		<Unit filename="C:/didi/Inno/2 year 1 semester/introToAI/sudoku_ga/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
