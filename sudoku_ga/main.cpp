@@ -13,20 +13,21 @@ using namespace std;
 const int N = 9;
 const int MINUS_INFINITY = numeric_limits<int>::min();
 int MAX_GENERATION = 100000;
+string INPUT_FILE = "C:/didi/Inno/2 year 1 semester/introToAI/sudoku_ga/input.txt";
+string OUTPUT_FILE = "C:/didi/Inno/2 year 1 semester/introToAI/sudoku_ga/output.txt";
 
 enum Mutation {
     ROW, COLUMN, SQUARE
 };
 
-template <typename T>
+template<typename T>
 T getRandom(T start, T end) {
     mt19937 generator(random_device{}());
 
     if constexpr (std::is_floating_point<T>::value) {
         uniform_real_distribution<T> distribution(start, end);
         return distribution(generator);
-    }
-    else if constexpr (std::is_integral<T>::value) {
+    } else if constexpr (std::is_integral<T>::value) {
         uniform_int_distribution<T> distribution(start, end);
         return distribution(generator);
     }
@@ -55,6 +56,7 @@ public:
     Table() : grid(N, vector<int>(N, 0)) {
         this->setFitness();
     }
+
     explicit Table(vector<vector<int>> g) : grid(std::move(g)) {
         this->setFitness();
     }
@@ -81,7 +83,7 @@ public:
             }
         }
         vector<int> result;
-        for (int d : possible_digits) {
+        for (int d: possible_digits) {
             result.push_back(d);
         }
         return result;
@@ -114,7 +116,9 @@ public:
             for (int j = 0; j < N; ++j) {
                 if (grid[i][j] == 0) {
                     vector<int> possible_digits = this->getPossible(i, j);
-                    if (!possible_digits.empty()) solution[i][j] = possible_digits[getRandom(0, int(possible_digits.size()) - 1)];
+                    if (!possible_digits.empty()) solution[i][j] = possible_digits[getRandom(0,
+                                                                                             int(possible_digits.size()) -
+                                                                                             1)];
                     else solution[i][j] = getRandomDigit();
                 }
             }
@@ -197,9 +201,35 @@ public:
     }
 };
 
+bool readTableFromFile(Table& s) {
+    ifstream inputFile(INPUT_FILE);
+
+    if (inputFile.is_open()) {
+        inputFile >> s;
+        inputFile.close();
+        return true;
+    } else {
+        cerr << "Error opening input.txt!" << endl;
+        return false;
+    }
+}
+
+bool writeToFile(Table& content) {
+    ofstream outFile(OUTPUT_FILE);
+
+    if (outFile.is_open()) {
+        outFile << content;
+        outFile.close();
+        return true;
+    } else {
+        cout << "Error opening output.txt!" << endl;
+        return false;
+    }
+}
+
 class GeneticAlgorithm {
 private:
-    int population_size = 500;
+    int population_size = 700;
     double mutation_rate = 0.04;
     double mutation_rate_factor = 1.5;
     int stagnation_threshold = 50;
@@ -230,17 +260,17 @@ public:
         return population;
     }
 
-    Table mutate(Table& t) const {
+    Table mutate(Table &t) const {
         vector<vector<int>> mutated_solution = t.getGrid();
         for (int i = 0; i < N; ++i) {
             if (getRandom(0.0, 1.0) < this->mutation_rate) {
                 Mutation mutation_type = getRandomMutation();
                 switch (mutation_type) {
                     case ROW:
-                        swap(mutated_solution[i][getRandom(0, N-1)], mutated_solution[i][getRandom(0, N-1)]);
+                        swap(mutated_solution[i][getRandom(0, N - 1)], mutated_solution[i][getRandom(0, N - 1)]);
                         break;
                     case COLUMN:
-                        swap(mutated_solution[getRandom(0, N-1)][i], mutated_solution[getRandom(0, N-1)][i]);
+                        swap(mutated_solution[getRandom(0, N - 1)][i], mutated_solution[getRandom(0, N - 1)][i]);
                         break;
                     case SQUARE:
                         int square_row = (i / 3) * 3;
@@ -278,7 +308,7 @@ public:
         return Table(child);
     }
 
-    static Table* get_solution(vector<Table> population) {
+    static Table *get_solution(vector<Table> population) {
         int n = int(population.size());
         for (int i = 0; i < n; ++i) {
             if (population[i].is_solved()) return &population[i];
@@ -286,10 +316,10 @@ public:
         return nullptr;
     }
 
-    static Table get_best_solution(vector<Table>& population) {
+    static Table get_best_solution(vector<Table> &population) {
         int largest_fitness = MINUS_INFINITY;
         Table best_solution;
-        for (const auto& solution : population) {
+        for (const auto &solution: population) {
             if (solution.getFitness() > largest_fitness) {
                 largest_fitness = solution.getFitness();
                 best_solution = solution;
@@ -311,7 +341,8 @@ public:
         vector<Table> new_population;
         int num_elitism = int(int(population.size()) * this->elitism_portion);
         vector<Table> sorted_population = population;
-        sort(sorted_population.begin(), sorted_population.end(), [](Table& a, Table& b) { return a.getFitness() > b.getFitness(); });
+        sort(sorted_population.begin(), sorted_population.end(),
+             [](Table &a, Table &b) { return a.getFitness() > b.getFitness(); });
         for (int i = 0; i < num_elitism; ++i) {
             new_population.push_back(sorted_population[i]);
         }
@@ -341,7 +372,7 @@ public:
         if (cur_best_fitness > this->best_fitness) {
             this->best_fitness = cur_best_fitness;
             this->stagnant_generations = 0;
-            this->mutation_rate *= (1/this->mutation_rate_factor);
+            this->mutation_rate *= (1 / this->mutation_rate_factor);
             this->mutation_rate = max(this->mutation_rate, this->min_mutation_rate);
         } else this->stagnant_generations += 1;
 
@@ -351,7 +382,7 @@ public:
             this->stagnant_generations = 0;
         }
         if (cur_best_solution.is_solved()) {
-            vector<Table> answer = { cur_best_solution };
+            vector<Table> answer = {cur_best_solution};
             return answer;
         }
         return new_population;
@@ -365,7 +396,7 @@ void solve_sudoku(Table t) {
         cout << sudoku_solver.getTable();
         return;
     }
-//    cout << "Solving" << endl;
+
     vector<Table> population = sudoku_solver.get_population();
 
     for (int generation = 0; generation < MAX_GENERATION; ++generation) {
@@ -377,7 +408,7 @@ void solve_sudoku(Table t) {
 
         auto solution = GeneticAlgorithm::get_solution(population);
         if (solution != nullptr) {
-            cout << *solution;
+            writeToFile(*solution);
             return;
         }
     }
@@ -385,22 +416,13 @@ void solve_sudoku(Table t) {
 
 int main() {
     auto start = chrono::high_resolution_clock::now();
-    Table s;
-    ifstream inputFile("C:/didi/Inno/2 year 1 semester/introToAI/sudoku_ga/input.txt");
 
-    if (inputFile.is_open()) {
-        inputFile >> s;
-        inputFile.close();
-        cout << s << endl;
-    } else {
-//        cout << "Error opening file!" << endl;
-        return 1;
-    }
+    Table s;
+    if (!readTableFromFile(s)) return 1;
     solve_sudoku(s);
 
     auto end = chrono::high_resolution_clock::now();
     chrono::duration<double> elapsed = end - start;
-
     cout << "Execution time: " << elapsed.count() << " seconds" << endl;
 
     return 0;
